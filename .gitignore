@@ -36,6 +36,8 @@ $RECYCLE.BIN/
 .fseventsd
 .Spotlight-V100
 .TemporaryItems
+
+.obj
 .Trashes
 .VolumeIcon.icns
 
