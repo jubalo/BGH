@@ -23,7 +23,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	void SideMove(float Value);
+	void HorizontalMove(float Value);
+
+	void VerticalMove(float Value);
+
+	void UpdateCharacter();
+
+	/** Called to choose the correct animation to play based on the character's movement state */
+	void UpdateAnimation();
 
 private:
 

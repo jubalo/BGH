@@ -40,17 +40,22 @@ AHunter::AHunter()
 	// Create a camera boom attached to the root (capsule)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->AttachTo(RootComponent);
-	CameraBoom->TargetArmLength = 100.0f;
+	CameraBoom->TargetArmLength = 0.0f;
 	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 0.0f);
 	CameraBoom->bAbsoluteRotation = true;
 	CameraBoom->bDoCollisionTest = false;
 	CameraBoom->RelativeRotation = FRotator(0.0f, 0.0f, 0.0f);
 	CameraBoom->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
 
+	// Characteristics
+	GetCharacterMovement()->GroundFriction = 20.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 4000.0f;
+
 	// Create an orthographic camera (no perspective) and attach it to the boom
 	SideViewCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("SideViewCamera"));
 	SideViewCameraComponent->ProjectionMode = ECameraProjectionMode::Orthographic;
-	SideViewCameraComponent->OrthoWidth = 530.0f;
+	SideViewCameraComponent->OrthoWidth = 800.0f;
 	SideViewCameraComponent->AttachTo(CameraBoom, USpringArmComponent::SocketName);
 }
 
@@ -65,10 +70,10 @@ void AHunter::BeginPlay()
 void AHunter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	UpdateCharacter();
 }
 
-void AHunter::SideMove(float Value)
+void AHunter::HorizontalMove(float Value)
 {
 	/*UpdateChar();*/
 
@@ -76,10 +81,54 @@ void AHunter::SideMove(float Value)
 	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
 }
 
+void AHunter::VerticalMove(float Value)
+{
+	/*UpdateChar();*/
+
+	// Apply the input to the character motion
+	AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
+}
+
 // Called to bind functionality to input
 void AHunter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
-	InputComponent->BindAxis("Side_Running", this, &AHunter::SideMove);
+	InputComponent->BindAxis("Side_Running", this, &AHunter::HorizontalMove);
+	InputComponent->BindAxis("Vertical_Running", this, &AHunter::VerticalMove);
+}
 
+void AHunter::UpdateCharacter()
+{
+	// Update animation to match the motion
+	UpdateAnimation();
+
+	// Now setup the rotation of the controller based on the direction we are travelling
+	const FVector PlayerVelocity = GetVelocity();
+	float TravelDirectionX = PlayerVelocity.X;
+	float TravelDirectionY = PlayerVelocity.Y;
+	// Set the rotation so that the character faces his direction of travel.
+	if (Controller != nullptr)
+	{
+		if (TravelDirectionX < 0.0f)
+		{
+			Controller->SetControlRotation(FRotator(0.0, 0.0f, 0.0f));
+		}
+		else if (TravelDirectionX > 0.0f)
+		{
+			Controller->SetControlRotation(FRotator(0.0f, 180.0f, 0.0f));
+		}
+	}
+}
+
+void AHunter::UpdateAnimation()
+{
+	const FVector PlayerVelocity = GetVelocity();
+	const float PlayerSpeed = PlayerVelocity.Size();
+
+	// Are we moving or standing still?
+	UPaperFlipbook* DesiredAnimation = (PlayerSpeed > 0.0f) ? SideRunningAnimation : IdleDownAnimation;
+	if (GetSprite()->GetFlipbook() != DesiredAnimation)
+	{
+		GetSprite()->SetFlipbook(DesiredAnimation);
+	}
 }
 
