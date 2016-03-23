@@ -14,18 +14,36 @@ AHunter::AHunter()
 
 	struct FConstructorStatics
 	{
-		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> SideRunningAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> LeftSideRunningAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> RightSideRunningAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> UpRunningAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> DownRunningAnimationAsset;
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleDownAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleUpAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleLeftAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleRightAnimationAsset;
 		FConstructorStatics():
 			IdleDownAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Down")),
-			SideRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Side"))
+			IdleUpAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Up")),
+			IdleLeftAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Left")),
+			IdleRightAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Right")),
+			LeftSideRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Side_Left")),
+			RightSideRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Side_Right")),
+			UpRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Up")),
+			DownRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Down"))
 		{
 		}
 	};
 	static FConstructorStatics ConstructorStatics;
 
-	SideRunningAnimation = ConstructorStatics.SideRunningAnimationAsset.Get();
+	LeftSideRunningAnimation = ConstructorStatics.LeftSideRunningAnimationAsset.Get();
+	RightSideRunningAnimation = ConstructorStatics.RightSideRunningAnimationAsset.Get();
+	UpRunningAnimation = ConstructorStatics.UpRunningAnimationAsset.Get();
+	DownRunningAnimation = ConstructorStatics.DownRunningAnimationAsset.Get();
 	IdleDownAnimation = ConstructorStatics.IdleDownAnimationAsset.Get();
+	IdleUpAnimation = ConstructorStatics.IdleUpAnimationAsset.Get();
+	IdleLeftAnimation = ConstructorStatics.IdleLeftAnimationAsset.Get();
+	IdleRightAnimation = ConstructorStatics.IdleRightAnimationAsset.Get();
 	GetSprite()->SetFlipbook(IdleDownAnimation);
 
 	if (!RootComponent) {
@@ -57,6 +75,8 @@ AHunter::AHunter()
 	SideViewCameraComponent->ProjectionMode = ECameraProjectionMode::Orthographic;
 	SideViewCameraComponent->OrthoWidth = 800.0f;
 	SideViewCameraComponent->AttachTo(CameraBoom, USpringArmComponent::SocketName);
+
+	Orientation = 3;
 }
 
 // Called when the game starts or when spawned
@@ -114,7 +134,7 @@ void AHunter::UpdateCharacter()
 		}
 		else if (TravelDirectionX > 0.0f)
 		{
-			Controller->SetControlRotation(FRotator(0.0f, 180.0f, 0.0f));
+			Controller->SetControlRotation(FRotator(0.0f, 0.0f, 180.0f));
 		}
 	}
 }
@@ -122,13 +142,71 @@ void AHunter::UpdateCharacter()
 void AHunter::UpdateAnimation()
 {
 	const FVector PlayerVelocity = GetVelocity();
-	const float PlayerSpeed = PlayerVelocity.Size();
+	bool PlayerOrientation = true;
+	UPaperFlipbook* DesiredAnimation = IdleDownAnimation;
 
+	// Are we moving horizontally?
+	if (PlayerVelocity.X != 0.0f) {
+		PlayerOrientation = true;
+		
+		//Are we moving left?
+		if (PlayerVelocity.X < 0.0f) {
+			Orientation = 0;
+			DesiredAnimation = LeftSideRunningAnimation;
+		}
+		else {
+			Orientation = 2;
+			DesiredAnimation = RightSideRunningAnimation;
+		}
+	}
+
+	// Are we moving Vertically?
+	else if (PlayerVelocity.Y != 0.0f) {
+		PlayerOrientation = false;
+		
+		// Are we moving Down?
+		if (PlayerVelocity.Y < 0.0f) {
+			Orientation = 1;
+			DesiredAnimation = UpRunningAnimation;
+		}
+		else {
+			Orientation = 3;
+			DesiredAnimation = DownRunningAnimation;
+		}
+	}
+
+	// We are not moving
+	else {
+		if (Orientation == 0) {
+			DesiredAnimation = IdleLeftAnimation;
+		}
+		else if (Orientation == 2) {
+			DesiredAnimation = IdleRightAnimation;
+		}
+		else if (Orientation == 1) {
+			DesiredAnimation = IdleUpAnimation;
+		}
+		else {
+			DesiredAnimation = IdleDownAnimation;
+		}
+	}
+
+	//Update sprite
+	if (GetSprite()->GetFlipbook() != DesiredAnimation)
+	{
+		GetSprite()->SetFlipbook(DesiredAnimation);
+	}
+
+	
+	/** /
+	const float PlayerSpeed = PlayerVelocity.Size();
 	// Are we moving or standing still?
 	UPaperFlipbook* DesiredAnimation = (PlayerSpeed > 0.0f) ? SideRunningAnimation : IdleDownAnimation;
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);
 	}
+	/**/
 }
+
 

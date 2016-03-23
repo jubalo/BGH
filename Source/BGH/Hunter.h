@@ -32,6 +32,7 @@ public:
 	/** Called to choose the correct animation to play based on the character's movement state */
 	void UpdateAnimation();
 
+
 private:
 
 	// Hunter Sprite
@@ -46,13 +47,33 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
+	float Orientation;
+
 protected:
 	// The animation to play while running around
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
-	class UPaperFlipbook* SideRunningAnimation;
+	class UPaperFlipbook* LeftSideRunningAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* RightSideRunningAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* UpRunningAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* DownRunningAnimation;
 
 	// The animation to play while idle (standing still)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* IdleDownAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* IdleUpAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* IdleLeftAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* IdleRightAnimation;
 
 };

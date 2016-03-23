@@ -6,7 +6,9 @@ public class BGH : ModuleRules
 {
 	public BGH(TargetInfo Target)
 	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Paper2D" });
+        MinFilesUsingPrecompiledHeaderOverride = 1;
+        bFasterWithoutUnity = true;
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Paper2D" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
