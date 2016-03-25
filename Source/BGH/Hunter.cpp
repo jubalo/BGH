@@ -22,6 +22,10 @@ AHunter::AHunter()
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleUpAnimationAsset;
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleLeftAnimationAsset;
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleRightAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackDownAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackUpAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackLeftAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackRightAnimationAsset;
 		FConstructorStatics():
 			IdleDownAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Down")),
 			IdleUpAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Up")),
@@ -30,7 +34,11 @@ AHunter::AHunter()
 			LeftSideRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Side_Left")),
 			RightSideRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Side_Right")),
 			UpRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Up")),
-			DownRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Down"))
+			DownRunningAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Walk_Down")),
+			AttackDownAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Down")),
+			AttackUpAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Up")),
+			AttackLeftAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Left")),
+			AttackRightAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Down"))
 		{
 		}
 	};
@@ -44,6 +52,11 @@ AHunter::AHunter()
 	IdleUpAnimation = ConstructorStatics.IdleUpAnimationAsset.Get();
 	IdleLeftAnimation = ConstructorStatics.IdleLeftAnimationAsset.Get();
 	IdleRightAnimation = ConstructorStatics.IdleRightAnimationAsset.Get();
+	AttackDownAnimation = ConstructorStatics.AttackDownAnimationAsset.Get();
+	AttackUpAnimation = ConstructorStatics.AttackUpAnimationAsset.Get();
+	AttackLeftAnimation = ConstructorStatics.AttackLeftAnimationAsset.Get();
+	AttackRightAnimation = ConstructorStatics.AttackRightAnimationAsset.Get();
+
 	GetSprite()->SetFlipbook(IdleDownAnimation);
 
 	if (!RootComponent) {
@@ -77,6 +90,7 @@ AHunter::AHunter()
 	SideViewCameraComponent->AttachTo(CameraBoom, USpringArmComponent::SocketName);
 
 	Orientation = 3;
+	bAttacking = false;
 }
 
 // Called when the game starts or when spawned
@@ -112,8 +126,11 @@ void AHunter::VerticalMove(float Value)
 // Called to bind functionality to input
 void AHunter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
+	InputComponent->BindAction("Sword_Attack", IE_Pressed, this, &AHunter::BeginSwordAttack);
+	InputComponent->BindAction("Sword_Attack", IE_Released, this, &AHunter::StopSwordAttack);
 	InputComponent->BindAxis("Side_Running", this, &AHunter::HorizontalMove);
 	InputComponent->BindAxis("Vertical_Running", this, &AHunter::VerticalMove);
+
 }
 
 void AHunter::UpdateCharacter()
@@ -191,6 +208,11 @@ void AHunter::UpdateAnimation()
 		}
 	}
 
+	// Are we attacking?
+	if (bAttacking) {
+		DesiredAnimation = AttackDownAnimation;
+	}
+
 	//Update sprite
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
@@ -207,6 +229,16 @@ void AHunter::UpdateAnimation()
 		GetSprite()->SetFlipbook(DesiredAnimation);
 	}
 	/**/
+}
+
+void AHunter::BeginSwordAttack() {
+	UE_LOG(LogTemp, Warning, TEXT("atacou"));
+	bAttacking = true;
+}
+
+void AHunter::StopSwordAttack() {
+	UE_LOG(LogTemp, Warning, TEXT("parou o ataque"));
+	bAttacking = false;
 }
 
 

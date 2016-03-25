@@ -32,6 +32,10 @@ public:
 	/** Called to choose the correct animation to play based on the character's movement state */
 	void UpdateAnimation();
 
+	void BeginSwordAttack();
+
+	void StopSwordAttack();
+
 
 private:
 
@@ -48,6 +52,8 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 	float Orientation;
+
+	bool bAttacking;
 
 protected:
 	// The animation to play while running around
@@ -75,5 +81,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* IdleRightAnimation;
+
+	// The animation to play when attacking
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* AttackDownAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* AttackUpAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* AttackLeftAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* AttackRightAnimation;
 
 };
