@@ -34,6 +34,8 @@ public:
 
 	void BeginSwordAttack();
 
+	void QueueStopAttack();
+
 	void StopSwordAttack();
 
 
@@ -54,6 +56,10 @@ private:
 	float Orientation;
 
 	bool bAttacking;
+
+	bool bWantsToAttack;
+
+	FTimerHandle AttackTimerHandler;
 
 protected:
 	// The animation to play while running around

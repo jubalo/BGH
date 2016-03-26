@@ -38,7 +38,7 @@ AHunter::AHunter()
 			AttackDownAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Down")),
 			AttackUpAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Up")),
 			AttackLeftAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Left")),
-			AttackRightAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Down"))
+			AttackRightAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Right"))
 		{
 		}
 	};
@@ -112,7 +112,8 @@ void AHunter::HorizontalMove(float Value)
 	/*UpdateChar();*/
 
 	// Apply the input to the character motion
-	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
+	if(!bAttacking)
+		AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
 }
 
 void AHunter::VerticalMove(float Value)
@@ -120,14 +121,15 @@ void AHunter::VerticalMove(float Value)
 	/*UpdateChar();*/
 
 	// Apply the input to the character motion
-	AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
+	if (!bAttacking)
+		AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
 }
 
 // Called to bind functionality to input
 void AHunter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	InputComponent->BindAction("Sword_Attack", IE_Pressed, this, &AHunter::BeginSwordAttack);
-	InputComponent->BindAction("Sword_Attack", IE_Released, this, &AHunter::StopSwordAttack);
+	InputComponent->BindAction("Sword_Attack", IE_Released, this, &AHunter::QueueStopAttack);
 	InputComponent->BindAxis("Side_Running", this, &AHunter::HorizontalMove);
 	InputComponent->BindAxis("Vertical_Running", this, &AHunter::VerticalMove);
 
@@ -210,7 +212,18 @@ void AHunter::UpdateAnimation()
 
 	// Are we attacking?
 	if (bAttacking) {
-		DesiredAnimation = AttackDownAnimation;
+		if (Orientation == 0) {
+			DesiredAnimation = AttackLeftAnimation;
+		}
+		else if (Orientation == 2) {
+			DesiredAnimation = AttackRightAnimation;
+		}
+		else if (Orientation == 1) {
+			DesiredAnimation = AttackUpAnimation;
+		}
+		else {
+			DesiredAnimation = AttackDownAnimation;
+		}
 	}
 
 	//Update sprite
@@ -234,11 +247,23 @@ void AHunter::UpdateAnimation()
 void AHunter::BeginSwordAttack() {
 	UE_LOG(LogTemp, Warning, TEXT("atacou"));
 	bAttacking = true;
+	bWantsToAttack = true;
+
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandler, this, &AHunter::StopSwordAttack, GetSprite()->GetFlipbook()->GetTotalDuration(), false);
+}
+
+void AHunter::QueueStopAttack() {
+	bWantsToAttack = false;
 }
 
 void AHunter::StopSwordAttack() {
-	UE_LOG(LogTemp, Warning, TEXT("parou o ataque"));
-	bAttacking = false;
+	
+	if (!bWantsToAttack) {
+		bAttacking = false;
+	}
+	else {
+		BeginSwordAttack();
+	}
 }
 
 
