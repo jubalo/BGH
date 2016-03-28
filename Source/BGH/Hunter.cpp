@@ -26,6 +26,10 @@ AHunter::AHunter()
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackUpAnimationAsset;
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackLeftAnimationAsset;
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackRightAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> BowLeftAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> BowRightAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> BowUpAnimationAsset;
+		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> BowDownAnimationAsset;
 		FConstructorStatics():
 			IdleDownAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Down")),
 			IdleUpAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Idle_Up")),
@@ -38,7 +42,11 @@ AHunter::AHunter()
 			AttackDownAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Down")),
 			AttackUpAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Up")),
 			AttackLeftAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Left")),
-			AttackRightAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Right"))
+			AttackRightAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Sword_Attack_Right")),
+			BowLeftAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Bow_Attack_Left")),
+			BowRightAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Bow_Attack_Right")),
+			BowUpAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Bow_Attack_Up")),
+			BowDownAnimationAsset(TEXT("/Game/Player_Content/Player_Sprites/Player_FB/Bow_Attack_Down"))
 		{
 		}
 	};
@@ -56,6 +64,10 @@ AHunter::AHunter()
 	AttackUpAnimation = ConstructorStatics.AttackUpAnimationAsset.Get();
 	AttackLeftAnimation = ConstructorStatics.AttackLeftAnimationAsset.Get();
 	AttackRightAnimation = ConstructorStatics.AttackRightAnimationAsset.Get();
+	BowLeftAnimation = ConstructorStatics.BowLeftAnimationAsset.Get();
+	BowRightAnimation = ConstructorStatics.BowRightAnimationAsset.Get();
+	BowUpAnimation = ConstructorStatics.BowUpAnimationAsset.Get();
+	BowDownAnimation = ConstructorStatics.BowDownAnimationAsset.Get();
 
 	GetSprite()->SetFlipbook(IdleDownAnimation);
 
@@ -112,7 +124,7 @@ void AHunter::HorizontalMove(float Value)
 	/*UpdateChar();*/
 
 	// Apply the input to the character motion
-	if(!bAttacking)
+	if(!(bAttacking || bLoadingBow))
 		AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
 }
 
@@ -121,7 +133,7 @@ void AHunter::VerticalMove(float Value)
 	/*UpdateChar();*/
 
 	// Apply the input to the character motion
-	if (!bAttacking)
+	if (!(bAttacking || bLoadingBow))
 		AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
 }
 
@@ -130,6 +142,10 @@ void AHunter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	InputComponent->BindAction("Sword_Attack", IE_Pressed, this, &AHunter::BeginSwordAttack);
 	InputComponent->BindAction("Sword_Attack", IE_Released, this, &AHunter::QueueStopAttack);
+
+	InputComponent->BindAction("Bow_Attack", IE_Pressed, this, &AHunter::BeginLoadingBow);
+	InputComponent->BindAction("Bow_Attack", IE_Released, this, &AHunter::StopLoadingBow);
+
 	InputComponent->BindAxis("Side_Running", this, &AHunter::HorizontalMove);
 	InputComponent->BindAxis("Vertical_Running", this, &AHunter::VerticalMove);
 
@@ -194,6 +210,38 @@ void AHunter::UpdateAnimation()
 		}
 	}
 
+	// Are we attacking?
+	else if (bAttacking) {
+		if (Orientation == 0) {
+			DesiredAnimation = AttackLeftAnimation;
+		}
+		else if (Orientation == 2) {
+			DesiredAnimation = AttackRightAnimation;
+		}
+		else if (Orientation == 1) {
+			DesiredAnimation = AttackUpAnimation;
+		}
+		else {
+			DesiredAnimation = AttackDownAnimation;
+		}
+	}
+
+	// Are we loading a bow?
+	else if (bLoadingBow) {
+		if (Orientation == 0) {
+			DesiredAnimation = BowLeftAnimation;
+		}
+		else if (Orientation == 2) {
+			DesiredAnimation = BowRightAnimation;
+		}
+		else if (Orientation == 1) {
+			DesiredAnimation = BowUpAnimation;
+		}
+		else {
+			DesiredAnimation = BowDownAnimation;
+		}
+	}
+
 	// We are not moving
 	else {
 		if (Orientation == 0) {
@@ -210,21 +258,7 @@ void AHunter::UpdateAnimation()
 		}
 	}
 
-	// Are we attacking?
-	if (bAttacking) {
-		if (Orientation == 0) {
-			DesiredAnimation = AttackLeftAnimation;
-		}
-		else if (Orientation == 2) {
-			DesiredAnimation = AttackRightAnimation;
-		}
-		else if (Orientation == 1) {
-			DesiredAnimation = AttackUpAnimation;
-		}
-		else {
-			DesiredAnimation = AttackDownAnimation;
-		}
-	}
+	
 
 	//Update sprite
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
@@ -264,6 +298,22 @@ void AHunter::StopSwordAttack() {
 	else {
 		BeginSwordAttack();
 	}
+}
+
+void AHunter::BeginLoadingBow()
+{
+	bLoadingBow = true;
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandler, this, &AHunter::ShootArrow, GetSprite()->GetFlipbook()->GetTotalDuration(), false);
+}
+
+void AHunter::ShootArrow()
+{
+
+}
+
+void AHunter::StopLoadingBow()
+{
+	bLoadingBow = false;
 }
 
 

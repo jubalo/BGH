@@ -38,6 +38,14 @@ public:
 
 	void StopSwordAttack();
 
+	void BeginLoadingBow();
+
+	void ShootArrow();
+
+	void ReadyToShoot();
+
+	void StopLoadingBow();
+
 
 private:
 
@@ -58,6 +66,8 @@ private:
 	bool bAttacking;
 
 	bool bWantsToAttack;
+
+	bool bLoadingBow;
 
 	FTimerHandle AttackTimerHandler;
 
@@ -100,5 +110,17 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* AttackRightAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* BowLeftAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* BowRightAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* BowUpAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* BowDownAnimation;
 
 };
