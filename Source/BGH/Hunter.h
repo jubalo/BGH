@@ -42,9 +42,11 @@ public:
 
 	void ShootArrow();
 
-	void ReadyToShoot();
-
 	void StopLoadingBow();
+
+	/** Projectile class to spawn */
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class AArrow_Projectile> ProjectileClass;
 
 
 private:
@@ -70,6 +72,8 @@ private:
 	bool bLoadingBow;
 
 	FTimerHandle AttackTimerHandler;
+
+	FTimerHandle BowTimerHandler;
 
 protected:
 	// The animation to play while running around

@@ -2,6 +2,7 @@
 
 #include "BGH.h"
 #include "PaperSpriteComponent.h"
+#include "Arrow_Projectile.h"
 #include "PaperFlipbookComponent.h"
 #include "Hunter.h"
 
@@ -99,6 +100,7 @@ AHunter::AHunter()
 	SideViewCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("SideViewCamera"));
 	SideViewCameraComponent->ProjectionMode = ECameraProjectionMode::Orthographic;
 	SideViewCameraComponent->OrthoWidth = 800.0f;
+	SideViewCameraComponent->RelativeRotation = FRotator(0.0f, 0.0f, -90.0f);
 	SideViewCameraComponent->AttachTo(CameraBoom, USpringArmComponent::SocketName);
 
 	Orientation = 3;
@@ -267,15 +269,6 @@ void AHunter::UpdateAnimation()
 	}
 
 	
-	/** /
-	const float PlayerSpeed = PlayerVelocity.Size();
-	// Are we moving or standing still?
-	UPaperFlipbook* DesiredAnimation = (PlayerSpeed > 0.0f) ? SideRunningAnimation : IdleDownAnimation;
-	if (GetSprite()->GetFlipbook() != DesiredAnimation)
-	{
-		GetSprite()->SetFlipbook(DesiredAnimation);
-	}
-	/**/
 }
 
 void AHunter::BeginSwordAttack() {
@@ -303,12 +296,7 @@ void AHunter::StopSwordAttack() {
 void AHunter::BeginLoadingBow()
 {
 	bLoadingBow = true;
-	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandler, this, &AHunter::ShootArrow, GetSprite()->GetFlipbook()->GetTotalDuration(), false);
-}
-
-void AHunter::ShootArrow()
-{
-
+	GetWorld()->GetTimerManager().SetTimer(BowTimerHandler, this, &AHunter::ShootArrow, GetSprite()->GetFlipbook()->GetTotalDuration(), false);
 }
 
 void AHunter::StopLoadingBow()
@@ -316,4 +304,24 @@ void AHunter::StopLoadingBow()
 	bLoadingBow = false;
 }
 
+
+void AHunter::ShootArrow()
+{
+	bLoadingBow = false;
+	UWorld* const World = GetWorld();
+	FVector SpawnLocation = GetActorLocation();
+	FRotator Rotation = FRotator(90.0f, 0.0f, 0.0f);
+	if (World != NULL)
+	{
+		if (Orientation == 2)
+			Rotation.Yaw = 180.0f;
+		else if (Orientation == 3)
+			Rotation.Yaw = 90.0f;
+		else if (Orientation == 1)
+			Rotation.Yaw = 270.0f;
+
+		// spawn the projectile at the muzzle
+		World->SpawnActor<AArrow_Projectile>(AArrow_Projectile::StaticClass(), SpawnLocation, Rotation);
+	}
+}
 
