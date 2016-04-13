@@ -18,6 +18,13 @@ class BGH_API AArrow : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	class UProjectileMovementComponent* ProjectileMovement;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
+	class UArrowComponent* ArrowComp;
+
+	//Sprite for the body
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Arrow", meta = (AllowPrivateAccess = "true"))
+	class UPaperSpriteComponent* ArrowSprite;
+
 public:	
 	// Sets default values for this actor's properties
 	AArrow();

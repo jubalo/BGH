@@ -2,11 +2,23 @@
 
 #include "BGH.h"
 #include "Arrow.h"
+#include "PaperSpriteComponent.h"
+#include "PaperSprite.h"
 
 
 // Sets default values
 AArrow::AArrow()
 {
+
+	struct FConstructorStatics
+	{
+		ConstructorHelpers::FObjectFinderOptional<UPaperSprite> ArrowSpriteAsset;
+		FConstructorStatics() :
+			ArrowSpriteAsset(TEXT("/Game/Player_Content/Player_Sprites/download_arrow_Sprite_0"))
+		{
+		}
+	};
+	static FConstructorStatics ConstructorStatics;
 	
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
@@ -24,12 +36,22 @@ AArrow::AArrow()
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement0"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = ProjectileMovement->MaxSpeed = 1.f;
+	ProjectileMovement->InitialSpeed = ProjectileMovement->MaxSpeed = 1000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f; // No gravity
 
-													  // Die after 3 seconds by default
+	//Arrow Component
+	ArrowComp = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComp"));
+	ArrowComp->AttachTo(RootComponent);
+
+	// Arrow Sprite
+	ArrowSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("ArrowSprite"));
+	ArrowSprite->SetSprite(ConstructorStatics.ArrowSpriteAsset.Get());
+	ArrowSprite->RelativeRotation = FRotator(0.0f, 0.0f, 90.0f);
+	ArrowSprite->AttachTo(RootComponent);
+
+	// Die after 3 seconds by default
 	InitialLifeSpan = 60.0f;
 
 }
