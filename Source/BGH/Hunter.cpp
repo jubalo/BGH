@@ -3,6 +3,7 @@
 #include "BGH.h"
 #include "PaperSpriteComponent.h"
 #include "Arrow_Projectile.h"
+#include "Arrow.h"
 #include "PaperFlipbookComponent.h"
 #include "Hunter.h"
 
@@ -71,14 +72,13 @@ AHunter::AHunter()
 	BowDownAnimation = ConstructorStatics.BowDownAnimationAsset.Get();
 
 	GetSprite()->SetFlipbook(IdleDownAnimation);
-
+	GetSprite()->RelativeLocation = FVector(0.0f, 0.0f, -25.0f);
 	if (!RootComponent) {
 		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HunterBase"));
 	}
 
-
 	// Set the size of our collision capsule.
-	GetCapsuleComponent()->SetCapsuleHalfHeight(29.0f);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(30.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(16.0f);
 
 	// Create a camera boom attached to the root (capsule)
@@ -88,7 +88,8 @@ AHunter::AHunter()
 	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 0.0f);
 	CameraBoom->bAbsoluteRotation = true;
 	CameraBoom->bDoCollisionTest = false;
-	CameraBoom->RelativeRotation = FRotator(0.0f, 0.0f, 0.0f);
+	// Y X Z
+	CameraBoom->RelativeRotation = FRotator(-90.0f, -90.0f, 0.0f);
 	CameraBoom->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
 
 	// Characteristics
@@ -100,11 +101,11 @@ AHunter::AHunter()
 	SideViewCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("SideViewCamera"));
 	SideViewCameraComponent->ProjectionMode = ECameraProjectionMode::Orthographic;
 	SideViewCameraComponent->OrthoWidth = 800.0f;
-	SideViewCameraComponent->RelativeRotation = FRotator(0.0f, 0.0f, -90.0f);
 	SideViewCameraComponent->AttachTo(CameraBoom, USpringArmComponent::SocketName);
 
 	Orientation = 3;
 	bAttacking = false;
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
 // Called when the game starts or when spawned
@@ -307,21 +308,36 @@ void AHunter::StopLoadingBow()
 
 void AHunter::ShootArrow()
 {
-	bLoadingBow = false;
 	UWorld* const World = GetWorld();
-	FVector SpawnLocation = GetActorLocation();
-	FRotator Rotation = FRotator(90.0f, 0.0f, 0.0f);
+	FVector  SpawnLocation = GetActorLocation();
+	FRotator Rotation = FRotator(0.0f, 0.0f, 0.0f);
 	if (World != NULL)
 	{
-		if (Orientation == 2)
-			Rotation.Yaw = 180.0f;
-		else if (Orientation == 3)
+		if (Orientation == 2) {			// Right
 			Rotation.Yaw = 90.0f;
-		else if (Orientation == 1)
+			SpawnLocation.X += 20.0f;
+			SpawnLocation.Y -= 20.0f;
+		}
+		else if (Orientation == 3) {	// Down
+			Rotation.Yaw = 180.0f;
+			//SpawnLocation.X +=
+			SpawnLocation.Y += 15.0f;
+		}
+		else if (Orientation == 0) {		// Left
 			Rotation.Yaw = 270.0f;
+			SpawnLocation.X -= 20.0f;
+			SpawnLocation.Y -= 20.0f;
+		}
+		else {
+			SpawnLocation.Y -= 40.0f;
+		}
 
-		// spawn the projectile at the muzzle
-		World->SpawnActor<AArrow_Projectile>(AArrow_Projectile::StaticClass(), SpawnLocation, Rotation);
+		if (bLoadingBow) {
+			// spawn the projectile 
+			UE_LOG(LogTemp, Warning, TEXT("x: %f , y: %f , z: %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
+			World->SpawnActor<AArrow>(AArrow::StaticClass(), SpawnLocation, Rotation);
+		}
 	}
+	bLoadingBow = false;
 }
 

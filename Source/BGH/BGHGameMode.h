@@ -14,6 +14,7 @@ class BGH_API ABGHGameMode : public AGameMode
 	GENERATED_BODY()
 	
 	
-	
+public:
+	ABGHGameMode();
 	
 };

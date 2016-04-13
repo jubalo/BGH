@@ -12,15 +12,22 @@ class BGH_API AArrow_Projectile : public AActor
 
 	/** Sphere collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-	class USphereComponent* CollisionComp;
+	class UCapsuleComponent* CollisionComp;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
+	class UArrowComponent* ArrowComp;
 
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	class UProjectileMovementComponent* ProjectileMovement;
+
 	
 public:	
 	// Sets default values for this actor's properties
 	AArrow_Projectile();
+
+	UFUNCTION()
+	void UpdateMovement();
 
 	UFUNCTION()
 	void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -32,9 +39,10 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 	/** Returns CollisionComp subobject **/
-	FORCEINLINE class USphereComponent* GetCollisionComp() const { return CollisionComp; }
+	FORCEINLINE class UCapsuleComponent* GetCollisionComp() const { return CollisionComp; }
+
 	/** Returns ProjectileMovement subobject **/
-	FORCEINLINE class UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
 private:
 	//Sprite for the body

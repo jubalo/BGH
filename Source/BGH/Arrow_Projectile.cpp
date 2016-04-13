@@ -23,36 +23,48 @@ AArrow_Projectile::AArrow_Projectile()
 	static FConstructorStatics ConstructorStatics;
 
 	if (!RootComponent) {
-		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ArrowBase"));
+		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ArrowRoot"));
 	}
 
-	ArrowSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("ArrowSprite"));
-	ArrowSprite->SetSprite(ConstructorStatics.ArrowSpriteAsset.Get());
-	ArrowSprite->AttachTo(RootComponent);
-
+/**/	
 	// Use a sphere as a simple collision representation
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(5.0f);
+	CollisionComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("SphereComp"));
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
+	CollisionComp->RelativeRotation = FRotator(90.0f, 0.0f, 90.0f);
+	CollisionComp->SetCapsuleHalfHeight(13.0f);
+	CollisionComp->SetCapsuleRadius(3.0f);
 	CollisionComp->OnComponentHit.AddDynamic(this, &AArrow_Projectile::OnHit);		// set up a notification for when this component hits something blocking
-
-																								// Players can't walk on it
+	
+	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
 
 	// Set as root component
 	RootComponent = CollisionComp;
+/**/
+	//Arrow Component
+	ArrowComp = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComp"));
+	ArrowComp->RelativeRotation = FRotator(-90.0f, 0.0f, 0.0f);
+	ArrowComp->AttachTo(RootComponent);
 
+	// Arrow Sprite
+	ArrowSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("ArrowSprite"));
+	ArrowSprite->SetSprite(ConstructorStatics.ArrowSpriteAsset.Get());
+	ArrowSprite->RelativeRotation = FRotator(90.0f, 90.0f, 0.0f);
+	ArrowSprite->AttachTo(RootComponent);
+/**/
 	// Use a ProjectileMovementComponent to govern this projectile's movement
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
-	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = 3000.f;
-	ProjectileMovement->MaxSpeed = 3000.f;
-	ProjectileMovement->bRotationFollowsVelocity = true;
-	ProjectileMovement->bShouldBounce = true;
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement0"));
+	ProjectileMovement->UpdatedComponent = RootComponent;
+/** /
+	ProjectileMovement->InitialSpeed = ProjectileMovement->MaxSpeed = 500.f;
+	ProjectileMovement->bRotationFollowsVelocity = false;
+	ProjectileMovement->bShouldBounce = false;
+	ProjectileMovement->ProjectileGravityScale = 1.0f; // No gravity
+/**/
 
 	// Die after 3 seconds by default
-	InitialLifeSpan = 3.0f;
+	InitialLifeSpan = 60.0f;
 }
 
 // Called when the game starts or when spawned
@@ -66,11 +78,18 @@ void AArrow_Projectile::BeginPlay()
 void AArrow_Projectile::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
+	UpdateMovement();
+}
+
+void AArrow_Projectile::UpdateMovement() {
+
+	
 
 }
 
 void AArrow_Projectile::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	UE_LOG(LogTemp, Warning, TEXT("hit"));
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
 	{

@@ -44,10 +44,6 @@ public:
 
 	void StopLoadingBow();
 
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category = Projectile)
-	TSubclassOf<class AArrow_Projectile> ProjectileClass;
-
 
 private:
 
@@ -62,6 +58,7 @@ private:
 	/** Camera boom positioning the camera beside the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+
 
 	float Orientation;
 
