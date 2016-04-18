@@ -36,7 +36,7 @@ AArrow::AArrow()
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement0"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = ProjectileMovement->MaxSpeed = 1000.f;
+	ProjectileMovement->InitialSpeed = ProjectileMovement->MaxSpeed = 500.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f; // No gravity
@@ -48,11 +48,11 @@ AArrow::AArrow()
 	// Arrow Sprite
 	ArrowSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("ArrowSprite"));
 	ArrowSprite->SetSprite(ConstructorStatics.ArrowSpriteAsset.Get());
-	ArrowSprite->RelativeRotation = FRotator(0.0f, 0.0f, 90.0f);
+	ArrowSprite->RelativeRotation = FRotator(0.0f, 180.0f, 90.0f);
 	ArrowSprite->AttachTo(RootComponent);
 
-	// Die after 3 seconds by default
-	InitialLifeSpan = 60.0f;
+	// Die after 6 seconds by default
+	InitialLifeSpan = 6.0f;
 
 }
 
@@ -63,6 +63,10 @@ void AArrow::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector N
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
+
+		if (OtherActor->bCanBeDamaged) {
+			// damage
+		}
 
 		Destroy();
 	}

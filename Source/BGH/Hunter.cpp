@@ -78,8 +78,8 @@ AHunter::AHunter()
 	}
 
 	// Set the size of our collision capsule.
-	GetCapsuleComponent()->SetCapsuleHalfHeight(30.0f);
-	GetCapsuleComponent()->SetCapsuleRadius(16.0f);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(29.0f);
+	GetCapsuleComponent()->SetCapsuleRadius(14.0f);
 	GetCapsuleComponent()->RelativeRotation = FRotator(0.0f, 0.0f, -90.0f);
 
 	// Create a camera boom attached to the root (capsule)
@@ -273,8 +273,9 @@ void AHunter::UpdateAnimation()
 	
 }
 
+
+//sword stuff
 void AHunter::BeginSwordAttack() {
-	UE_LOG(LogTemp, Warning, TEXT("atacou"));
 	bAttacking = true;
 	bWantsToAttack = true;
 
@@ -295,6 +296,8 @@ void AHunter::StopSwordAttack() {
 	}
 }
 
+
+// bow stuff
 void AHunter::BeginLoadingBow()
 {
 	bLoadingBow = true;
@@ -317,25 +320,25 @@ void AHunter::ShootArrow()
 		if (Orientation == 2) {			// Right
 			//Rotation.Yaw = 90.0f;
 			SpawnLocation.X += 20.0f;
-			SpawnLocation.Y -= 20.0f;
+			SpawnLocation.Y -= 10.0f;
 		}
 		else if (Orientation == 3) {	// Down
-			//Rotation.Yaw = 180.0f;
+			Rotation.Yaw = 90.0f;
 			//SpawnLocation.X +=
 			SpawnLocation.Y += 15.0f;
 		}
 		else if (Orientation == 0) {		// Left
-			//Rotation.Yaw = 270.0f;
+			Rotation.Yaw = 180.0f;
 			SpawnLocation.X -= 20.0f;
-			SpawnLocation.Y -= 20.0f;
+			SpawnLocation.Y -= 10.0f;
 		}
 		else {
+			Rotation.Yaw = -90.0f;
 			SpawnLocation.Y -= 40.0f;
 		}
 
 		if (bLoadingBow) {
 			// spawn the projectile 
-			UE_LOG(LogTemp, Warning, TEXT("x: %f , y: %f , z: %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
 			World->SpawnActor<AArrow>(AArrow::StaticClass(), SpawnLocation, Rotation);
 		}
 	}
