@@ -125,8 +125,6 @@ void AHunter::Tick(float DeltaTime)
 
 void AHunter::HorizontalMove(float Value)
 {
-	/*UpdateChar();*/
-
 	// Apply the input to the character motion
 	if(!(bAttacking || bLoadingBow))
 		AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
