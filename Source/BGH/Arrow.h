@@ -25,6 +25,7 @@ class BGH_API AArrow : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Arrow", meta = (AllowPrivateAccess = "true"))
 	class UPaperSpriteComponent* ArrowSprite;
 
+
 public:	
 	// Sets default values for this actor's properties
 	AArrow();

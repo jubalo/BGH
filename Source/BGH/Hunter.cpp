@@ -78,6 +78,7 @@ AHunter::AHunter()
 	}
 
 	// Set the size of our collision capsule.
+	GetCapsuleComponent()->bGenerateOverlapEvents = true;
 	GetCapsuleComponent()->SetCapsuleHalfHeight(29.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(14.0f);
 	GetCapsuleComponent()->RelativeRotation = FRotator(0.0f, 0.0f, -90.0f);

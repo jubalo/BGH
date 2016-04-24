@@ -22,7 +22,7 @@ AArrow::AArrow()
 	
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(5.0f);
+	CollisionComp->InitSphereRadius(3.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 	CollisionComp->OnComponentHit.AddDynamic(this, &AArrow::OnHit);		// set up a notification for when this component hits something blocking
 
@@ -49,6 +49,7 @@ AArrow::AArrow()
 	ArrowSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("ArrowSprite"));
 	ArrowSprite->SetSprite(ConstructorStatics.ArrowSpriteAsset.Get());
 	ArrowSprite->RelativeRotation = FRotator(0.0f, 180.0f, 90.0f);
+	ArrowSprite->RelativeLocation = FVector(-10.0f, 0.0f, 0.0f);
 	ArrowSprite->AttachTo(RootComponent);
 
 	// Die after 6 seconds by default
