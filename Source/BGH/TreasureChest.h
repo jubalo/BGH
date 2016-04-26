@@ -21,19 +21,7 @@ public:
 	
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
-
-	//Sprite for the body
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Treasure", meta = (AllowPrivateAccess = "true"))
-	class UPaperSpriteComponent* ActiveSprite;
-
-	//Sprite for the body
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Treasure", meta = (AllowPrivateAccess = "true"))
-	class UPaperSprite* ClosedTreasureSprite;
-
-	//Sprite for the body
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Treasure", meta = (AllowPrivateAccess = "true"))
-	class UPaperSprite* OpenedTreasureSprite;
-
+	
 	//Sprite for the body
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Treasure", meta = (AllowPrivateAccess = "true"))
 	class UPaperFlipbookComponent* OpenTreasureFB;
@@ -47,12 +35,14 @@ public:
 
 	void SetupPlayerInputComponent(class UInputComponent* InputComponent);
 
+	UFUNCTION(BlueprintCallable, Category = "Treasure")
 	void Open();
 
 private:
 
-	bool bIsOpen;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Treasure", meta = (AllowPrivateAccess = "true"))
+	bool bNearChest;
 
-	bool bIsPlayerOverlaping;
-	
+	bool bIsOpen;
+		
 };
