@@ -8,7 +8,7 @@ public class BGH : ModuleRules
 	{
         MinFilesUsingPrecompiledHeaderOverride = 1;
         bFasterWithoutUnity = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Paper2D" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Paper2D", "AIModule" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
