@@ -114,6 +114,7 @@ AHunter::AHunter()
 void AHunter::BeginPlay()
 {
 	Super::BeginPlay();
+	HP = MaxHP;
 
 }
 
@@ -123,6 +124,18 @@ void AHunter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	UpdateCharacter();
 }
+
+float AHunter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,class AController* EventInstigator, class AActor* DamageCauser) 
+{
+	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	HP -= Damage;
+	if (HP < 0.0f) {
+		//dead
+	}
+
+	return Damage;
+}
+
 
 void AHunter::HorizontalMove(float Value)
 {

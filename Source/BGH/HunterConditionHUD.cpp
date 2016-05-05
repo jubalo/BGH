@@ -18,15 +18,11 @@ void AHunterConditionHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	// Draw very simple crosshair
-
-	// find center of the Canvas
+	//
 	const FVector2D Position(10.0f, 10.0f);
-	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
-	const FVector2D CrosshairDrawPosition((Center.X - (CharacterCondTex->GetSurfaceWidth() * 0.5)),
-		(Center.Y - (CharacterCondTex->GetSurfaceHeight() * 0.5f)));
+	
 
-	// draw the crosshair
+	// draw HUD
 	FCanvasTileItem TileItem(Position, CharacterCondTex->Resource, FLinearColor::White);
 	TileItem.BlendMode = SE_BLEND_Translucent;
 	DrawRect(FLinearColor(0.0f, 0.8f, 0.0f, 1.0f), 70.0f, 70.0f, CharacterCondTex->GetSizeX() - 60.0f , 10.0f);

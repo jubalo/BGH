@@ -23,6 +23,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
+
 	void HorizontalMove(float Value);
 
 	void VerticalMove(float Value);
@@ -59,6 +61,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
+	UPROPERTY
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxHP = 100.0f;
+
+	float HP;
 
 	float Orientation;
 

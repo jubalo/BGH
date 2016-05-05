@@ -25,4 +25,6 @@ private:
 	/** Crosshair asset pointer */
 	class UTexture2D* CharacterCondTex;
 
+	class AHunter* Player;
+
 };
