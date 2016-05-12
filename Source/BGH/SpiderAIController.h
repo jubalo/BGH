@@ -31,9 +31,14 @@ class BGH_API ASpiderAIController : public AAIController
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 		FName TargetToFollowKeyName;
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+		FName OutsideRangeKeyName;
+
 public:
 
 	void SetTargetToFollow(AHunter* Hunter);
+
+	void SetOutsideRange(bool outside);
 
 	/** Returns BehaviorComp subobject **/
 	FORCEINLINE UBehaviorTreeComponent* GetBehaviorComp() const { return BehaviorComp; }

@@ -28,6 +28,13 @@ class BGH_API AEnemySpider : public APaperCharacter
 	/* Last time the player was spotted */
 	float LastSeenTime;
 
+	FVector HomeLocation;
+
+	// Booleans
+	bool bIsAttacking;
+
+	bool bOutsideRange;
+
 protected:
 
 	// The animations to play while running around
@@ -59,8 +66,7 @@ protected:
 
 	void UpdateAnimation();
 
-	// Booleans
-	bool bIsAttacking;
+	void CheckPosition();
 
 public:
 

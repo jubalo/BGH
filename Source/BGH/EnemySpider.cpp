@@ -24,12 +24,12 @@ AEnemySpider::AEnemySpider()
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> AttackAnimationAsset;
 		ConstructorHelpers::FObjectFinderOptional<UPaperFlipbook> IdleAnimationAsset;
 		FConstructorStatics()
-			: WalkUpAnimationAsset(TEXT("/Game/2dSideScroller/Sprites/WalkUp.WalkUp"))
-			, WalkDownAnimationAsset(TEXT("/Game/2dSideScroller/Sprites/WalkDown.WalkDown"))
-			, WalkLeftAnimationAsset(TEXT("/Game/2dSideScroller/Sprites/WalkLeft.WalkLeft"))
-			, WalkRightAnimationAsset(TEXT("/Game/2dSideScroller/Sprites/WalkRight.WalkRight"))
+			: WalkUpAnimationAsset(TEXT("/Game/Miscellaneous/Spiderling/FB_Spiderling_Walk_Up"))
+			, WalkDownAnimationAsset(TEXT("/Game/Miscellaneous/Spiderling/FB_Spiderling_Walk_Down"))
+			, WalkLeftAnimationAsset(TEXT("/Game/Miscellaneous/Spiderling/FB_Spiderling_Walk_Left"))
+			, WalkRightAnimationAsset(TEXT("/Game/Miscellaneous/Spiderling/FB_Spiderling_Walk_Right"))
 			, AttackAnimationAsset(TEXT("/Game/2dSideScroller/Sprites/Attack.Attack"))
-			, IdleAnimationAsset(TEXT("/Game/2dSideScroller/Sprites/idle.idle"))
+			, IdleAnimationAsset(TEXT("/Game/Miscellaneous/Spiderling/FB_Spiderling_Idle"))
 		{
 		}
 	};
@@ -69,6 +69,8 @@ void AEnemySpider::BeginPlay()
 	{
 		PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemySpider::OnSeePlayer);
 	}
+
+	HomeLocation = GetActorLocation();
 }
 
 void AEnemySpider::OnSeePlayer(APawn* Pawn)
@@ -125,6 +127,8 @@ void AEnemySpider::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	CheckPosition();
+
 	UpdateCharacter();	
 }
 
@@ -132,4 +136,24 @@ void AEnemySpider::UpdateCharacter()
 {
 	// Update animation to match the motion
 	UpdateAnimation();
+}
+
+void AEnemySpider::CheckPosition()
+{
+	FVector CurrentLocation = GetActorLocation();
+	FVector AuxVector = CurrentLocation - HomeLocation;
+
+	float DistanceToHome = AuxVector.Size();
+
+	ASpiderAIController* AIController = Cast<ASpiderAIController>(GetController());
+	if (AIController)
+	{
+		if (DistanceToHome > 200.0f)
+			AIController->SetOutsideRange(true);
+		else
+			AIController->SetOutsideRange(false);
+	}
+
+	
+
 }

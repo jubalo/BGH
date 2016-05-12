@@ -18,6 +18,7 @@ ASpiderAIController::ASpiderAIController(const class FObjectInitializer& ObjectI
 	/* Match with the AI/ZombieBlackboard */
 	HomeLocationKeyName = "HomeLocation";
 	TargetToFollowKeyName = "TargetToFollow";
+	OutsideRangeKeyName = "OutsideRange";
 }
 
 void ASpiderAIController::Possess(class APawn* InPawn)
@@ -55,5 +56,12 @@ void ASpiderAIController::SetTargetToFollow(AHunter* Hunter)
 	}
 }
 
+void ASpiderAIController::SetOutsideRange(bool outside)
+{
+	if (BlackboardComp)
+	{
+		BlackboardComp->SetValueAsObject(OutsideRangeKeyName, outside);
+	}
+}
 
 
