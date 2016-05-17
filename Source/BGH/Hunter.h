@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include "PaperCharacter.h"
+#include "BaseCharacter.h"
 #include "Hunter.generated.h"
 
 UCLASS()
-class BGH_API AHunter : public APaperCharacter
+class BGH_API AHunter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
-public:
-	// Sets default values for this pawn's properties
-	AHunter();
+	AHunter(const FObjectInitializer& ObjectInitializer);
 
+public:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -22,8 +21,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 
 	void HorizontalMove(float Value);
 
@@ -61,10 +58,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	UPROPERTY
-
-	UPROPERTY(EditDefaultsOnly)
-	float MaxHP = 100.0f;
+	/** Camera boom positioning the camera beside the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UPawnNoiseEmitterComponent* NoiseMaker;
 
 	float HP;
 

@@ -6,10 +6,12 @@
 #include "Arrow.h"
 #include "PaperFlipbookComponent.h"
 #include "Hunter.h"
+#include "BaseCharacter.h"
 
 
 // Sets default values
-AHunter::AHunter()
+AHunter::AHunter(const class FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -108,13 +110,14 @@ AHunter::AHunter()
 	Orientation = 3;
 	bAttacking = false;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
+
+	NoiseMaker = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
 }
 
 // Called when the game starts or when spawned
 void AHunter::BeginPlay()
 {
 	Super::BeginPlay();
-	HP = MaxHP;
 
 }
 
@@ -125,23 +128,13 @@ void AHunter::Tick(float DeltaTime)
 	UpdateCharacter();
 }
 
-float AHunter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,class AController* EventInstigator, class AActor* DamageCauser) 
-{
-	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	HP -= Damage;
-	if (HP < 0.0f) {
-		//dead
-	}
-
-	return Damage;
-}
-
-
 void AHunter::HorizontalMove(float Value)
 {
 	// Apply the input to the character motion
 	if(!(bAttacking || bLoadingBow))
 		AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
+
+	MakeNoise(1.0, this, GetActorLocation());
 }
 
 void AHunter::VerticalMove(float Value)
@@ -151,6 +144,8 @@ void AHunter::VerticalMove(float Value)
 	// Apply the input to the character motion
 	if (!(bAttacking || bLoadingBow))
 		AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
+
+	MakeNoise(1.0, this, GetActorLocation());
 }
 
 // Called to bind functionality to input

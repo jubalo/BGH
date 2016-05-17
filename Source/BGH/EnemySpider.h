@@ -2,16 +2,18 @@
 
 #pragma once
 
-#include "PaperCharacter.h"
+#include "BaseCharacter.h"
 #include "EnemySpider.generated.h"
 
 /**
  * 
  */
 UCLASS(config = Game)
-class BGH_API AEnemySpider : public APaperCharacter
+class BGH_API AEnemySpider : public ABaseCharacter
 {
 	GENERATED_BODY()
+
+	AEnemySpider(const FObjectInitializer& ObjectInitializer);
 	
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -20,13 +22,17 @@ class BGH_API AEnemySpider : public APaperCharacter
 	bool bSensedTarget;
 
 	UPROPERTY(VisibleAnywhere, Category = "AI")
-	class UPawnSensingComponent* PawnSensingComp;
+		class UPawnSensingComponent* PawnSensingComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+		class UCapsuleComponent* MeleeCollisionComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 		float SenseTimeOut;
 
-	/* Last time the player was spotted */
-	float LastSeenTime;
+	float LastHeardTime;
+
+	float LastMeleeAttackTime;
 
 	FVector HomeLocation;
 
@@ -59,18 +65,28 @@ protected:
 	class UPaperFlipbook* AttackAnimation;
 
 	UFUNCTION()
-		void OnSeePlayer(APawn* Pawn);
+		void OnHearNoise(APawn* Pawn, const FVector& Location, float Volume);
 
-	// Other functions
+	UFUNCTION(Category = "Attacking")
+		void PerformMeleeStrike(AActor* HitActor);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
+		float MeleeDamage;
+
+	float MeleeStrikeCooldown;
+
+	UFUNCTION()
+		void OnMeleeCompBeginOverlap(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+
+	void OnRetriggerMeleeStrike();
+
 	void UpdateCharacter();
 
 	void UpdateAnimation();
 
-	void CheckPosition();
+	FTimerHandle TimerHandle_MeleeAttack;
 
 public:
-
-	AEnemySpider();
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	class UBehaviorTree* BehaviorTree;

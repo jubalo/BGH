@@ -16,9 +16,8 @@ ASpiderAIController::ASpiderAIController(const class FObjectInitializer& ObjectI
 	BlackboardComp = ObjectInitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
 
 	/* Match with the AI/ZombieBlackboard */
-	HomeLocationKeyName = "HomeLocation";
+	NextLocationKeyName = "NextLocation";
 	TargetToFollowKeyName = "TargetToFollow";
-	OutsideRangeKeyName = "OutsideRange";
 }
 
 void ASpiderAIController::Possess(class APawn* InPawn)
@@ -34,8 +33,6 @@ void ASpiderAIController::Possess(class APawn* InPawn)
 		}
 
 		BehaviorComp->StartTree(*SpiderBot->BehaviorTree);
-
-		BlackboardComp->SetValueAsVector(HomeLocationKeyName, FVector(600.0f, 300.0f, 0.0f));
 	}
 }
 
@@ -48,19 +45,19 @@ void ASpiderAIController::UnPossess()
 	BehaviorComp->StopTree();
 }
 
-void ASpiderAIController::SetTargetToFollow(AHunter* Hunter)
+void ASpiderAIController::SetTargetToFollow(APawn* Pawn)
 {
 	if (BlackboardComp)
 	{
-		BlackboardComp->SetValueAsObject(TargetToFollowKeyName, Hunter);
+		BlackboardComp->SetValueAsObject(TargetToFollowKeyName, Pawn);
 	}
 }
 
-void ASpiderAIController::SetOutsideRange(bool outside)
+void ASpiderAIController::SetNextWaypoint(FVector NextWaypoint)
 {
 	if (BlackboardComp)
 	{
-		BlackboardComp->SetValueAsObject(OutsideRangeKeyName, outside);
+		BlackboardComp->SetValueAsVector(NextLocationKeyName, NextWaypoint);
 	}
 }
 
