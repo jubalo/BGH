@@ -39,7 +39,7 @@ class BGH_API AEnemySpider : public ABaseCharacter
 	// Booleans
 	bool bIsAttacking;
 
-	bool bOutsideRange;
+	bool bChasing;
 
 protected:
 
@@ -85,6 +85,8 @@ protected:
 	void UpdateAnimation();
 
 	FTimerHandle TimerHandle_MeleeAttack;
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 
 public:
 

@@ -12,7 +12,9 @@ class BGH_API AHunter : public ABaseCharacter
 
 	AHunter(const FObjectInitializer& ObjectInitializer);
 
-public:
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+		class UCapsuleComponent* MeleeCollisionComp;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -21,30 +23,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-
-	void HorizontalMove(float Value);
-
-	void VerticalMove(float Value);
-
-	void UpdateCharacter();
-
-	/** Called to choose the correct animation to play based on the character's movement state */
-	void UpdateAnimation();
-
-	void BeginSwordAttack();
-
-	void QueueStopAttack();
-
-	void StopSwordAttack();
-
-	void BeginLoadingBow();
-
-	void ShootArrow();
-
-	void StopLoadingBow();
-
-
-private:
 
 	// Hunter Sprite
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hunter", meta = (AllowPrivateAccess = "true"))
@@ -62,8 +40,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UPawnNoiseEmitterComponent* NoiseMaker;
 
-	float HP;
-
 	float Orientation;
 
 	bool bAttacking;
@@ -71,6 +47,10 @@ private:
 	bool bWantsToAttack;
 
 	bool bLoadingBow;
+
+	float MeleeStrikeCooldown;
+
+	float LastMeleeAttackTime;
 
 	FTimerHandle AttackTimerHandler;
 
@@ -128,4 +108,32 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* BowDownAnimation;
 
+	void HorizontalMove(float Value);
+
+	void VerticalMove(float Value);
+
+	void UpdateCharacter();
+
+	/** Called to choose the correct animation to play based on the character's movement state */
+	void UpdateAnimation();
+
+	void BeginSwordAttack();
+
+	void QueueStopAttack();
+
+	void StopSwordAttack();
+
+	void BeginLoadingBow();
+
+	void ShootArrow();
+
+	void StopLoadingBow();
+
+	UFUNCTION(Category = "Attacking")
+		void PerformMeleeStrike(AActor* HitActor);
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
+		float MeleeDamage;
 };

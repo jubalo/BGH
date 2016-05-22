@@ -25,6 +25,8 @@ class BGH_API AArrow : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Arrow", meta = (AllowPrivateAccess = "true"))
 	class UPaperSpriteComponent* ArrowSprite;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
+		float Damage;
 
 public:	
 	// Sets default values for this actor's properties
@@ -32,7 +34,7 @@ public:
 
 	/** Function to handle the projectile hitting something */
 	UFUNCTION()
-	void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+		void OnCompBeginOverlap(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
 	/** Returns CollisionComp subobject **/
 	FORCEINLINE class USphereComponent* GetCollisionComp() const { return CollisionComp; }

@@ -4,6 +4,8 @@
 #include "Arrow.h"
 #include "PaperSpriteComponent.h"
 #include "PaperSprite.h"
+#include "EnemySpider.h"
+#include "Hunter.h"
 
 
 // Sets default values
@@ -22,13 +24,9 @@ AArrow::AArrow()
 	
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(3.0f);
-	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
-	CollisionComp->OnComponentHit.AddDynamic(this, &AArrow::OnHit);		// set up a notification for when this component hits something blocking
-
-																								// Players can't walk on it
-	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
-	CollisionComp->CanCharacterStepUpOn = ECB_No;
+	CollisionComp->InitSphereRadius(5.0f);
+	CollisionComp->SetNotifyRigidBodyCollision(true);
+	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnCompBeginOverlap);		// set up a notification for when this component hits something blocking
 
 	// Set as root component
 	RootComponent = CollisionComp;
@@ -36,7 +34,7 @@ AArrow::AArrow()
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement0"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = ProjectileMovement->MaxSpeed = 500.f;
+	ProjectileMovement->InitialSpeed = ProjectileMovement->MaxSpeed = 750.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f; // No gravity
@@ -53,22 +51,24 @@ AArrow::AArrow()
 	ArrowSprite->AttachTo(RootComponent);
 
 	// Die after 6 seconds by default
-	InitialLifeSpan = 6.0f;
+	InitialLifeSpan = 2.0f;
+
+	Damage = 25.0f;
 
 }
 
-
-void AArrow::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AArrow::OnCompBeginOverlap(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	// Only add impulse and destroy projectile if we hit a physics
-	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
+	AEnemySpider* SpiderlingHit = Cast<AEnemySpider>(OtherActor);
+	//ASpiderBoss* SpiderBossHit = Cast<ASpiderBoss>(OtherActor);
+
+	if (SpiderlingHit)
 	{
-		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
-
-		if (OtherActor->bCanBeDamaged) {
-			// damage
-		}
-
 		Destroy();
+
+		FPointDamageEvent DmgEvent;
+		DmgEvent.Damage = Damage;
+
+		OtherActor->TakeDamage(DmgEvent.Damage, DmgEvent, UGameplayStatics::GetPlayerController(GetWorld(), 0), this);
 	}
 }

@@ -6,6 +6,7 @@
 #include "Arrow.h"
 #include "PaperFlipbookComponent.h"
 #include "Hunter.h"
+#include "Engine.h"
 #include "BaseCharacter.h"
 
 
@@ -85,6 +86,13 @@ AHunter::AHunter(const class FObjectInitializer& ObjectInitializer)
 	GetCapsuleComponent()->SetCapsuleRadius(14.0f);
 	GetCapsuleComponent()->RelativeRotation = FRotator(0.0f, 0.0f, -90.0f);
 
+	MeleeCollisionComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("MeleeCollision"));
+	MeleeCollisionComp->SetCapsuleHalfHeight(30.0f);
+	MeleeCollisionComp->SetCapsuleRadius(30.0f);
+	MeleeCollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	MeleeCollisionComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	MeleeCollisionComp->AttachParent = GetCapsuleComponent();
+
 	// Create a camera boom attached to the root (capsule)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->AttachTo(RootComponent);
@@ -107,6 +115,7 @@ AHunter::AHunter(const class FObjectInitializer& ObjectInitializer)
 	SideViewCameraComponent->OrthoWidth = 800.0f;
 	SideViewCameraComponent->AttachTo(CameraBoom, USpringArmComponent::SocketName);
 
+	MeleeDamage = 50;
 	Orientation = 3;
 	bAttacking = false;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -131,8 +140,10 @@ void AHunter::Tick(float DeltaTime)
 void AHunter::HorizontalMove(float Value)
 {
 	// Apply the input to the character motion
-	if(!(bAttacking || bLoadingBow))
+	if (!(bAttacking || bLoadingBow))
+	{
 		AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
+	}
 
 	MakeNoise(1.0, this, GetActorLocation());
 }
@@ -143,7 +154,9 @@ void AHunter::VerticalMove(float Value)
 
 	// Apply the input to the character motion
 	if (!(bAttacking || bLoadingBow))
+	{
 		AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
+	}
 
 	MakeNoise(1.0, this, GetActorLocation());
 }
@@ -166,23 +179,6 @@ void AHunter::UpdateCharacter()
 {
 	// Update animation to match the motion
 	UpdateAnimation();
-
-	// Now setup the rotation of the controller based on the direction we are travelling
-	const FVector PlayerVelocity = GetVelocity();
-	float TravelDirectionX = PlayerVelocity.X;
-	float TravelDirectionY = PlayerVelocity.Y;
-	// Set the rotation so that the character faces his direction of travel.
-	if (Controller != nullptr)
-	{
-		if (TravelDirectionX < 0.0f)
-		{
-			Controller->SetControlRotation(FRotator(0.0, 0.0f, 0.0f));
-		}
-		else if (TravelDirectionX > 0.0f)
-		{
-			Controller->SetControlRotation(FRotator(0.0f, 0.0f, 180.0f));
-		}
-	}
 }
 
 void AHunter::UpdateAnimation()
@@ -199,10 +195,12 @@ void AHunter::UpdateAnimation()
 		if (PlayerVelocity.X < 0.0f) {
 			Orientation = 0;
 			DesiredAnimation = LeftSideRunningAnimation;
+			MeleeCollisionComp->SetRelativeLocation(FVector(-20.0f, 0.0f, 0.0f));
 		}
 		else {
 			Orientation = 2;
 			DesiredAnimation = RightSideRunningAnimation;
+			MeleeCollisionComp->SetRelativeLocation(FVector(20.0f, 0.0f, 0.0f));
 		}
 	}
 
@@ -214,10 +212,12 @@ void AHunter::UpdateAnimation()
 		if (PlayerVelocity.Y < 0.0f) {
 			Orientation = 1;
 			DesiredAnimation = UpRunningAnimation;
+			MeleeCollisionComp->SetRelativeLocation(FVector(0.0f, 0.0f, 20.0f));
 		}
 		else {
 			Orientation = 3;
 			DesiredAnimation = DownRunningAnimation;
+			MeleeCollisionComp->SetRelativeLocation(FVector(0.0f, 0.0f, -20.0f));
 		}
 	}
 
@@ -286,15 +286,42 @@ void AHunter::BeginSwordAttack() {
 	bAttacking = true;
 	bWantsToAttack = true;
 
-	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandler, this, &AHunter::StopSwordAttack, GetSprite()->GetFlipbook()->GetTotalDuration(), false);
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandler, this, &AHunter::StopSwordAttack, 0.4f, false);
 }
 
-void AHunter::QueueStopAttack() {
+void AHunter::PerformMeleeStrike(AActor* HitActor)
+{
+	if (HitActor && HitActor != this && IsAlive())
+	{
+		ABaseCharacter* OtherPawn = Cast<ABaseCharacter>(HitActor);
+		if (OtherPawn)
+		{
+			FPointDamageEvent DmgEvent;
+			DmgEvent.Damage = MeleeDamage;
+
+			HitActor->TakeDamage(DmgEvent.Damage, DmgEvent, GetController(), this);
+		}
+	}
+}
+
+void AHunter::QueueStopAttack() 
+{
 	bWantsToAttack = false;
 }
 
-void AHunter::StopSwordAttack() {
-	
+void AHunter::StopSwordAttack() 
+{
+	TArray<AActor*> Overlaps;
+	MeleeCollisionComp->GetOverlappingActors(Overlaps, ABaseCharacter::StaticClass());
+	for (int32 i = 0; i < Overlaps.Num(); i++)
+	{
+		ABaseCharacter* OverlappingPawn = Cast<ABaseCharacter>(Overlaps[i]);
+		if (OverlappingPawn)
+		{
+			PerformMeleeStrike(OverlappingPawn);
+		}
+	}
+
 	if (!bWantsToAttack) {
 		bAttacking = false;
 	}
@@ -349,6 +376,28 @@ void AHunter::ShootArrow()
 			World->SpawnActor<AArrow>(AArrow::StaticClass(), SpawnLocation, Rotation);
 		}
 	}
-	bLoadingBow = false;
+
+	StopLoadingBow();
 }
 
+float AHunter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+	if (Health <= 0.f)
+	{
+		return 0.f;
+	}
+
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if (ActualDamage > 0.f)
+	{
+		Health -= ActualDamage;
+
+		if (Health <= 0)
+		{
+			Die(ActualDamage, DamageEvent, EventInstigator, DamageCauser);
+		}
+	}
+
+	return ActualDamage;
+}

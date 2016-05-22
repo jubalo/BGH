@@ -142,6 +142,7 @@ void AEnemySpider::Tick(float DeltaSeconds)
 		if (AIController)
 		{
 			bSensedTarget = false;
+			bChasing = false;
 			/* Reset */
 			AIController->SetTargetToFollow(nullptr);
 			AIController->SetNextWaypoint(HomeLocation);
@@ -155,10 +156,39 @@ void AEnemySpider::UpdateCharacter()
 	UpdateAnimation();
 }
 
+float AEnemySpider::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+	if (Health <= 0.f)
+	{
+		return 0.f;
+	}
+
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if (ActualDamage > 0.f)
+	{
+		Health -= ActualDamage;
+
+		if (Health <= 0)
+		{
+			Die(ActualDamage, DamageEvent, EventInstigator, DamageCauser);
+		}
+		else
+		{
+			ASpiderAIController* AIController = Cast<ASpiderAIController>(GetController());
+			if (AIController && !bChasing)
+			{
+				AIController->SetTargetToFollow(EventInstigator->GetPawn());
+				bChasing = true;
+			}
+		}
+	}
+
+	return ActualDamage;
+}
+
 void AEnemySpider::OnHearNoise(APawn* Pawn, const FVector& Location, float Volume)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SOM"));
-
 	/* Keep track of the time the player was last sensed in order to clear the target */
 	LastHeardTime = GetWorld()->GetTimeSeconds();
 	bSensedTarget = true;
@@ -167,6 +197,7 @@ void AEnemySpider::OnHearNoise(APawn* Pawn, const FVector& Location, float Volum
 	if (AIController)
 	{
 		AIController->SetTargetToFollow(Pawn);
+		bChasing = true;
 	}
 }
 
