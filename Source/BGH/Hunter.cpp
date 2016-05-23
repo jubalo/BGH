@@ -177,6 +177,7 @@ void AHunter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 void AHunter::UpdateCharacter()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("HP: %f"), Health));
 	// Update animation to match the motion
 	UpdateAnimation();
 }
@@ -184,11 +185,12 @@ void AHunter::UpdateCharacter()
 void AHunter::UpdateAnimation()
 {
 	const FVector PlayerVelocity = GetVelocity();
+	
 	bool PlayerOrientation = true;
 	UPaperFlipbook* DesiredAnimation = IdleDownAnimation;
 
 	// Are we moving horizontally?
-	if (PlayerVelocity.X != 0.0f) {
+	if (PlayerVelocity.X != 0.0f && abs((long) PlayerVelocity.X) >= abs((long) PlayerVelocity.Y)) {
 		PlayerOrientation = true;
 		
 		//Are we moving left?
@@ -335,7 +337,7 @@ void AHunter::StopSwordAttack()
 void AHunter::BeginLoadingBow()
 {
 	bLoadingBow = true;
-	GetWorld()->GetTimerManager().SetTimer(BowTimerHandler, this, &AHunter::ShootArrow, GetSprite()->GetFlipbook()->GetTotalDuration(), false);
+	GetWorld()->GetTimerManager().SetTimer(BowTimerHandler, this, &AHunter::ShootArrow, 0.4, false);
 }
 
 void AHunter::StopLoadingBow()

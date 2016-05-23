@@ -97,15 +97,15 @@ void AEnemySpider::UpdateAnimation()
 	long TravelDirectionY = PlayerVelocity.Y;
 	int DesiredSpriteRotation = 0;
 
-	if (PlayerSpeed == 0.0f)
-	{
-		GetSprite()->SetFlipbook(IdleAnimation);
-		return;
-	}
-
 	if (bIsAttacking)
 	{
 		GetSprite()->SetFlipbook(AttackAnimation);
+		return;
+	}
+
+	if (PlayerSpeed == 0.0f)
+	{
+		GetSprite()->SetFlipbook(IdleAnimation);
 		return;
 	}
 
@@ -142,7 +142,7 @@ void AEnemySpider::Tick(float DeltaSeconds)
 		if (AIController)
 		{
 			bSensedTarget = false;
-			bChasing = false;
+			bReturning = true;
 			/* Reset */
 			AIController->SetTargetToFollow(nullptr);
 			AIController->SetNextWaypoint(HomeLocation);
@@ -154,6 +154,21 @@ void AEnemySpider::UpdateCharacter()
 {
 	// Update animation to match the motion
 	UpdateAnimation();
+	
+	RegenerateHealth();
+}
+
+void AEnemySpider::RegenerateHealth() 
+{
+
+	if (Health < MaxHealth)
+	{
+		if (bReturning == true)
+			Health += 0.5f;
+	}
+
+	if (bReturning == true && GetVelocity().Size() == 0.0f && Health == MaxHealth)
+		bReturning = false;
 }
 
 float AEnemySpider::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
@@ -173,14 +188,9 @@ float AEnemySpider::TakeDamage(float Damage, struct FDamageEvent const& DamageEv
 		{
 			Die(ActualDamage, DamageEvent, EventInstigator, DamageCauser);
 		}
-		else
+		else if (!bReturning)
 		{
-			ASpiderAIController* AIController = Cast<ASpiderAIController>(GetController());
-			if (AIController && !bChasing)
-			{
-				AIController->SetTargetToFollow(EventInstigator->GetPawn());
-				bChasing = true;
-			}
+			OnHearNoise(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), FVector(0.0f, 0.0f, 0.0f), 0.0f);
 		}
 	}
 
@@ -197,8 +207,13 @@ void AEnemySpider::OnHearNoise(APawn* Pawn, const FVector& Location, float Volum
 	if (AIController)
 	{
 		AIController->SetTargetToFollow(Pawn);
-		bChasing = true;
+		bReturning = false;
 	}
+}
+
+void AEnemySpider::StopAttackAnimation()
+{
+	bIsAttacking = false;
 }
 
 void AEnemySpider::PerformMeleeStrike(AActor* HitActor)
@@ -222,6 +237,10 @@ void AEnemySpider::PerformMeleeStrike(AActor* HitActor)
 		{
 			/* Set to prevent a zombie to attack multiple times in a very short time */
 			LastMeleeAttackTime = GetWorld()->GetTimeSeconds();
+
+			bIsAttacking = true;
+
+			GetWorld()->GetTimerManager().SetTimer(AttackTimerHandler, this, &AEnemySpider::StopAttackAnimation, 0.2f, false);
 
 			FPointDamageEvent DmgEvent;
 			DmgEvent.Damage = MeleeDamage;
@@ -250,7 +269,7 @@ void AEnemySpider::OnRetriggerMeleeStrike()
 	MeleeCollisionComp->GetOverlappingActors(Overlaps, ABaseCharacter::StaticClass());
 	for (int32 i = 0; i < Overlaps.Num(); i++)
 	{
-		ABaseCharacter* OverlappingPawn = Cast<ABaseCharacter>(Overlaps[i]);
+		AHunter* OverlappingPawn = Cast<AHunter>(Overlaps[i]);
 		if (OverlappingPawn)
 		{
 			PerformMeleeStrike(OverlappingPawn);

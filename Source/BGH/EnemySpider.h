@@ -32,6 +32,8 @@ class BGH_API AEnemySpider : public ABaseCharacter
 
 	float LastHeardTime;
 
+	float LastChaseTime;
+
 	float LastMeleeAttackTime;
 
 	FVector HomeLocation;
@@ -39,7 +41,9 @@ class BGH_API AEnemySpider : public ABaseCharacter
 	// Booleans
 	bool bIsAttacking;
 
-	bool bChasing;
+	bool bReturning;
+
+	FTimerHandle AttackTimerHandler;
 
 protected:
 
@@ -87,6 +91,10 @@ protected:
 	FTimerHandle TimerHandle_MeleeAttack;
 
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
+
+	void RegenerateHealth();
+
+	void StopAttackAnimation();
 
 public:
 

@@ -28,6 +28,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerCondition")
 		float Health;
 
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerCondition")
+		float MaxHealth;
+
 	/* Take damage & handle death */
 
 	virtual void Die(float KillingDamage, FDamageEvent const& DamageEvent, AController* Killer, AActor* DamageCauser);	
