@@ -12,7 +12,7 @@ ASpiderBoss::ASpiderBoss(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	AIControllerClass = ASpiderBossAIController::StaticClass();
-
+	/**
 	// Setup the assets
 	struct FConstructorStatics
 	{
@@ -61,6 +61,7 @@ ASpiderBoss::ASpiderBoss(const class FObjectInitializer& ObjectInitializer)
 
 	MeleeDamage = 24.0f;
 	MeleeStrikeCooldown = 1.0f;
+	*/
 }
 
 

@@ -33,10 +33,12 @@ public:
 
 	void OnOverlapEnd(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	void SetupPlayerInputComponent(class UInputComponent* InputComponent);
+	//void SetupPlayerInputComponent(class UInputComponent* InputComponent);
+
+	float GetGoldAmount(); 
 
 	UFUNCTION(BlueprintCallable, Category = "Treasure")
-	void Open();
+	float Open();
 
 private:
 
@@ -44,5 +46,7 @@ private:
 	bool bNearChest;
 
 	bool bIsOpen;
+
+	float GoldAmount;
 		
 };
