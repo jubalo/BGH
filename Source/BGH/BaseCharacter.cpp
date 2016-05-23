@@ -7,6 +7,7 @@
 ABaseCharacter::ABaseCharacter(const class FObjectInitializer& ObjectInitializer)
 {
 	Health = 100;
+	MaxHealth = 100;
 }
 
 float ABaseCharacter::GetHealth() const
