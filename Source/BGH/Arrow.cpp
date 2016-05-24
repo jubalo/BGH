@@ -5,6 +5,7 @@
 #include "PaperSpriteComponent.h"
 #include "PaperSprite.h"
 #include "EnemySpider.h"
+#include "SpiderBoss.h"
 #include "Hunter.h"
 
 
@@ -60,9 +61,9 @@ AArrow::AArrow()
 void AArrow::OnCompBeginOverlap(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	AEnemySpider* SpiderlingHit = Cast<AEnemySpider>(OtherActor);
-	//ASpiderBoss* SpiderBossHit = Cast<ASpiderBoss>(OtherActor);
+	ASpiderBoss* SpiderBossHit = Cast<ASpiderBoss>(OtherActor);
 
-	if (SpiderlingHit)
+	if (SpiderlingHit || SpiderBossHit)
 	{
 		Destroy();
 

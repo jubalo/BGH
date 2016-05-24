@@ -40,6 +40,8 @@ ASpiderBoss::ASpiderBoss(const class FObjectInitializer& ObjectInitializer)
 	MeleeCollisionComp->AttachParent = GetCapsuleComponent();
 
 	MeleeDamage = 25.0f;
+	currentEgg = 1;
+	NumberEggs = 1;
 	MeleeStrikeCooldown = 1.0f;
 }
 
@@ -52,7 +54,16 @@ void ASpiderBoss::BeginPlay()
 		MeleeCollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ASpiderBoss::OnMeleeCompBeginOverlap);
 	}
 
+	bIsPlacingEggs = false;
+	bFoundEggPlace = false;
+
 	HomeLocation = GetActorLocation();
+
+	ASpiderBossAIController* AIController = Cast<ASpiderBossAIController>(GetController());
+	if (AIController)
+	{
+		AIController->SetTargetToFollow(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	}
 }
 
 void ASpiderBoss::UpdateAnimation()
@@ -63,15 +74,15 @@ void ASpiderBoss::UpdateAnimation()
 	long TravelDirectionY = PlayerVelocity.Y;
 	int DesiredSpriteRotation = 0;
 
-	if (PlayerSpeed == 0.0f)
-	{
-		GetSprite()->SetFlipbook(IdleAnimation);
-		return;
-	}
-
 	if (bIsAttacking)
 	{
 		GetSprite()->SetFlipbook(AttackAnimation);
+		return;
+	}
+
+	if (PlayerSpeed == 0.0f)
+	{
+		GetSprite()->SetFlipbook(IdleAnimation);
 		return;
 	}
 
@@ -83,7 +94,7 @@ void ASpiderBoss::UpdateAnimation()
 	switch (DesiredSpriteRotation)
 	{
 	case 0:
-		TravelDirectionX < 0.0f ? GetSprite()->SetFlipbook(WalkRightAnimation) : GetSprite()->SetFlipbook(WalkLeftAnimation);
+		TravelDirectionX > 0.0f ? GetSprite()->SetFlipbook(WalkRightAnimation) : GetSprite()->SetFlipbook(WalkLeftAnimation);
 		break;
 
 	case 1:
@@ -98,8 +109,154 @@ void ASpiderBoss::UpdateAnimation()
 void ASpiderBoss::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
 	UpdateCharacter();
+	DefineDifficulty();
+	isAtEggLocation(currentEgg);
+}
+
+void ASpiderBoss::isAtEggLocation(int currentEgg)
+{
+	if (bIsPlacingEggs)
+	{
+		/*switch (currentEgg)
+		{
+		case 1:
+			if ((GetActorLocation() - HomeLocation).Size() < 50.0f)
+			{
+				SpawnEgg();
+				PlaceEggs(currentEgg);
+			}
+			break;
+
+		case 2:
+			if ((GetActorLocation() - EggLocation).Size() < 50.0f)
+			{
+				SpawnEgg();
+				PlaceEggs(currentEgg);
+			}
+			break;
+
+		case 3:
+			if ((GetActorLocation() - EggLocation2).Size() < 50.0f)
+			{
+				SpawnEgg();
+				PlaceEggs(currentEgg);
+			}
+			break;
+
+		case 4:
+			if ((GetActorLocation() - EggLocation3).Size() < 50.0f)
+			{
+				SpawnEgg();
+				PlaceEggs(currentEgg);
+			}
+			break;
+
+		case 5:
+			if ((GetActorLocation() - EggLocation4).Size() < 50.0f)
+			{
+				SpawnEgg();
+				PlaceEggs(currentEgg);
+			}
+			break;
+
+		default:
+			break;
+		}*/
+
+		if ((GetActorLocation() - HomeLocation).Size() < 50.0f && !bFoundEggPlace)
+		{
+			bFoundEggPlace = true;
+			SpawnEgg();
+			PlaceEggs(currentEgg);	
+		}
+	}
+}
+
+void ASpiderBoss::SpawnEgg()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Placed Egg!"));
+	currentEgg++;
+}
+
+void ASpiderBoss::DefineDifficulty()
+{
+	if (Health == 300.0f && bIsPlacingEggs == false && NumberEggs != 2)
+	{
+		NumberEggs = 2;
+		GetCharacterMovement()->MaxWalkSpeed += 20.0f;
+	}
+
+	if (Health == 200.0f && bIsPlacingEggs == false && NumberEggs != 3)
+	{
+		NumberEggs = 3;
+		GetCharacterMovement()->MaxWalkSpeed += 20.0f;
+	}
+
+	if (Health == 100.0f && bIsPlacingEggs == false && NumberEggs != 5)
+	{
+		NumberEggs = 5;
+		GetCharacterMovement()->MaxWalkSpeed += 60.0f;
+	}
+
+	if (NumberEggs > 1 && bIsPlacingEggs == false)
+	{
+		bIsPlacingEggs = true;
+		GetCharacterMovement()->MaxWalkSpeed += 100.0f;
+		PlaceEggs(currentEgg);
+	}
+}
+
+void ASpiderBoss::PlaceEggs(int currentEgg)
+{
+	ASpiderBossAIController* AIController = Cast<ASpiderBossAIController>(GetController());
+
+	if (currentEgg > NumberEggs)
+	{
+		GetCharacterMovement()->MaxWalkSpeed -= 100.0f;
+		AIController->SetTargetToFollow(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		this->currentEgg = 1;
+		bIsPlacingEggs = false;
+
+		return;
+	}
+
+	AIController->SetTargetToFollow(nullptr);
+
+	switch (currentEgg)
+	{
+	case 1:
+		AIController->SetNextWaypoint(HomeLocation);
+		bFoundEggPlace = false;
+		break;
+
+	case 2:
+		HomeLocation.Y -= 300.0f;
+		AIController->SetNextWaypoint(HomeLocation);
+		bFoundEggPlace = false;
+		break;
+
+	case 3:
+		HomeLocation.Y += 150.0f;
+		AIController->SetNextWaypoint(HomeLocation);
+		bFoundEggPlace = false;
+		break;
+
+	case 4:
+		HomeLocation.X -= 200.0f;
+		AIController->SetNextWaypoint(HomeLocation);
+		bFoundEggPlace = false;
+		break;
+
+	case 5:
+		HomeLocation.X += 100.0f;
+		AIController->SetNextWaypoint(HomeLocation);
+		bFoundEggPlace = false;
+		break;
+
+	default:
+		break;
+	}
 }
 
 void ASpiderBoss::UpdateCharacter()

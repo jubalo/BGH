@@ -26,8 +26,20 @@ class BGH_API ASpiderBoss : public ABaseCharacter
 
 	FVector HomeLocation;
 
+	FVector EggLocation;
+
+	FVector EggLocation2;
+
+	FVector EggLocation3;
+
+	FVector EggLocation4;
+
 	// Booleans
 	bool bIsAttacking;
+
+	bool bIsPlacingEggs;
+
+	bool bFoundEggPlace;
 
 protected:
 
@@ -60,6 +72,8 @@ protected:
 
 	float MeleeStrikeCooldown;
 
+	int NumberEggs;
+
 	UFUNCTION()
 		void OnMeleeCompBeginOverlap(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
@@ -68,6 +82,16 @@ protected:
 	void UpdateCharacter();
 
 	void UpdateAnimation();
+
+	void DefineDifficulty();
+
+	void PlaceEggs(int currentEgg);
+
+	void SpawnEgg();
+
+	int currentEgg;
+
+	void isAtEggLocation(int currentEgg);
 
 	FTimerHandle TimerHandle_MeleeAttack;
 

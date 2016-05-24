@@ -177,7 +177,7 @@ void AHunter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 void AHunter::UpdateCharacter()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("HP: %f"), Health));
+
 	// Update animation to match the motion
 	UpdateAnimation();
 }
@@ -285,6 +285,10 @@ void AHunter::UpdateAnimation()
 
 //sword stuff
 void AHunter::BeginSwordAttack() {
+
+	if (bAttacking)
+		return;
+
 	bAttacking = true;
 	bWantsToAttack = true;
 

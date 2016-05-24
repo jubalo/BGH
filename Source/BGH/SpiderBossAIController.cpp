@@ -24,7 +24,7 @@ void ASpiderBossAIController::Possess(class APawn* InPawn)
 {
 	Super::Possess(InPawn);
 
-	AEnemySpider* SpiderBot = Cast<AEnemySpider>(InPawn);
+	ASpiderBoss* SpiderBot = Cast<ASpiderBoss>(InPawn);
 	if (SpiderBot)
 	{
 		if (SpiderBot->BehaviorTree->BlackboardAsset)
