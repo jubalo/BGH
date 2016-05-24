@@ -44,6 +44,8 @@ ATreasureChest::ATreasureChest()
 	OpenTreasureFB->CanCharacterStepUpOn = ECB_No;
 	OpenTreasureFB->AttachTo(RootComponent);
 
+	GoldAmount = rand() % 5 + 1;
+
 	bIsOpen = false;
 }
 
@@ -52,6 +54,10 @@ void ATreasureChest::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+float ATreasureChest::GetGoldAmount() {
+	return GoldAmount;
 }
 
 // Called every frame
@@ -79,16 +85,19 @@ void ATreasureChest::OnOverlapEnd(class AActor* OtherActor, class UPrimitiveComp
 	}
 }
 
+float ATreasureChest::Open()
+{
+	UE_LOG(LogTemp, Warning, TEXT("open"));
+	bIsOpen = true;
+	OpenTreasureFB->Play();
+	float gold = GetGoldAmount();
+	return gold;
+}
+/** /
 void ATreasureChest::SetupPlayerInputComponent(UInputComponent * InputComponent)
 {
 	InputComponent->BindAction("Interact", IE_Pressed, this, &ATreasureChest::Open);
 }
+/**/
 
-void ATreasureChest::Open()
-{
-
-	UE_LOG(LogTemp, Warning, TEXT("open"));
-	bIsOpen = true;
-	OpenTreasureFB->Play();
-}
 

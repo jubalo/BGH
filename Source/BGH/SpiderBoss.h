@@ -14,7 +14,7 @@ class BGH_API ASpiderBoss : public ABaseCharacter
 	GENERATED_BODY()
 
 	ASpiderBoss(const FObjectInitializer& ObjectInitializer);
-
+	/*
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void BeginPlay() override;
@@ -101,4 +101,5 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	class UBehaviorTree* BehaviorTree;
+	*/
 };

@@ -12,7 +12,7 @@ ASpiderBoss::ASpiderBoss(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	AIControllerClass = ASpiderBossAIController::StaticClass();
-
+	/**
 	// Setup the assets
 	struct FConstructorStatics
 	{
@@ -66,6 +66,11 @@ void ASpiderBoss::BeginPlay()
 	}
 }
 
+<<<<<<< HEAD
+	MeleeDamage = 24.0f;
+	MeleeStrikeCooldown = 1.0f;
+	*/
+=======
 void ASpiderBoss::UpdateAnimation()
 {
 	const FVector PlayerVelocity = GetVelocity();
@@ -349,6 +354,7 @@ void ASpiderBoss::OnRetriggerMeleeStrike()
 	{
 		TimerHandle_MeleeAttack.Invalidate();
 	}
+>>>>>>> origin/master
 }
 
 
